@@ -1,0 +1,76 @@
+#strpool
+
+process
+argv
+expression
+eval
+console
+log
+value
+
+#code
+// get process object
+pushi 0
+pushp
+pushgl
+
+// get argv array
+pushi 1
+pushp
+getp
+
+// get 3rd element in argv
+pushi 3
+getp
+
+// put it into vartab keyvalue pair with name expression
+pushi 2
+pushp
+store
+
+// get eval function
+pushi 3
+pushp
+pushgl
+
+// push the expression onto the stack from vartab keyvalue pair
+pushi 2
+pushp
+pushvar
+
+// evaluate the expression and store it as 'value' in vartab
+calls
+pushi 6
+pushp
+store
+
+// get console object
+pushi 4
+pushp
+pushgl
+
+// get log function from console
+pushi 5
+pushp
+getp
+
+// push value onto the stack from vartab
+pushi 6
+pushp
+pushvar
+
+// log the value
+calls
+
+// garbage collection
+pushi 2
+pushp
+pushi 6
+pushp
+delv
+delv
+pops
+
+// exit with code 0
+pushi 0
+exit

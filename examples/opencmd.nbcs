@@ -1,0 +1,43 @@
+#strpool
+require
+child_process
+exec
+start cmd
+
+setTimeout
+process
+exit
+#code
+// get require onto the stack
+pushi 0
+pushp
+pushgl
+
+// require('child_process')
+pushi 1
+pushp
+calls
+
+// get child_process.exec
+pushi 2
+pushp
+getp
+
+// child_process.exec('start cmd')
+pushi 3
+pushp
+calls
+pops
+
+//exit in 50 ms
+pushi 4
+pushp
+pushgl
+pushi 5
+pushp
+pushgl
+pushi 6
+pushp
+getp
+pushi 50
+calls

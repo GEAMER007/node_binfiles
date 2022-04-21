@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "pkg interpreter.js --output build/interptreter --config package.json && pkg compiler.js --output build/compiler --config package.json"
+  },
+  "pkg": {
+    "assets": "./assets/*"
   },
   "keywords": [],
   "author": "",

@@ -1,0 +1,28 @@
+#strpool
+console
+log
+hello world
+#code
+//push pool index of console
+pushi 0
+// interpret a number from the top of the stack as an index to the string in the pool and push that string
+pushp
+// push a nodejs global with name from the top of the stack
+pushgl
+// push pool index of log
+pushi 1
+// interpret a number from the top of the stack as an index to the string in the pool and push that string
+pushp
+// take the object and the property name from the top of the stack and push the property of the object to the stack
+getp
+//push pool index of hello world
+pushi 2
+// interpret a number from the top of the stack as an index to the string in the pool and push that string
+pushp
+// call the function at the base of the stack and take every other value in the stack as it's arguments (console.log('hello world'))
+calls
+// get rid of 'undefined' at the stack (which was the return value of console.log)
+pops
+// exit with code 0
+pushi 0
+exit
