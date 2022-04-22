@@ -1,0 +1,109 @@
+#strpool
+wloopstart
+wloopcondition
+console
+log
+hi
+Math
+random
+half
+loop ended
+#code
+
+//0.5
+pushb 2
+pushb 1
+div
+pushb 7
+pushp
+store
+
+//random function
+pushb 5
+pushp
+pushgl
+pushb 6
+pushp
+getp
+pushb 6
+pushp
+store
+
+//console.log
+pushb 2
+pushp
+pushgl
+pushb 3
+pushp
+getp
+pushb 3
+pushp
+store
+
+//while loop
+
+//codepoint name can be anything you want
+pushb 0
+pushp
+codepoint
+
+// your
+// code
+// that
+// you
+// want
+// to
+// loop
+// goes
+// here
+
+pushb 3
+pushp
+pushvar
+
+pushb 4
+pushp
+calls
+
+pops
+
+// your condition goes here
+pushb 6
+pushp
+pushvar
+calls
+pushb 7
+pushp
+pushvar
+gr
+// store its value into a variable
+pushb 1
+pushp
+store
+// get instruction pointer that points to an instruction outside of a loop
+getip
+pushb 10
+add
+// get instruction pointer that points to the first instruction inside the loop
+pushb 0
+pushp
+getcp
+// push result of the condition to the stack
+pushb 1
+pushp
+pushvar
+
+ifej
+
+// code that will be executed after the loop
+
+pushb 3
+pushp
+pushvar
+
+pushb 8
+pushp
+calls
+pops
+
+exit

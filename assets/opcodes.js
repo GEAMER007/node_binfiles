@@ -2,8 +2,11 @@ class Memory{
     constructor() {
         this.stack=[]
         this.strpool=[]
+        this.codepoints={}
         this.vartab={}
         this.bytecode=Buffer.from([])
+        this.instptr=0
+        this.curinstruction=''
     }
     
 }
@@ -11,6 +14,16 @@ module.exports=(mem=new Memory())=>{
     var {strpool,vartab,stack}=mem
     return{
     btypes:{
+        "byte":[
+            1,
+            b=>b[0],
+            str=>Buffer.from([str-0])
+        ],
+        "char":[
+            2,
+            b=>String.fromCharCode(b.readUInt16BE(0)),
+            (str='')=>{var buf=Buffer.from([0,0]);buf.writeUInt16BE(str.charCodeAt(0));return buf}
+        ],
         "int":[
             4,
             b=>b.readUInt32BE(0),
@@ -23,6 +36,16 @@ module.exports=(mem=new Memory())=>{
         ]
         
     },
+    replacers:{
+        
+        'pushstring':
+            (str='')=>{
+                var nv=''
+                for(var i in str)nv+=`pushc ${str[i]}\n`
+                return `${nv}buildstr ${str.length}`
+            }
+        
+        },
     opcodes:[
     [
         "pushi",
@@ -149,7 +172,7 @@ module.exports=(mem=new Memory())=>{
         ()=>stack.push(stack.pop()/stack.pop())
     ],
     [
-        'sqrt',
+        'pow',
         18,
         '0',
         ()=>stack.push(stack.pop()**stack.pop())
@@ -179,6 +202,207 @@ module.exports=(mem=new Memory())=>{
         '0',
         ()=>stack.reverse()
     ],
+    [
+        'buildstr',
+        23,
+        '2short',
+        si=>stack.push(stack.splice(stack.length-si,stack.length).join(''))
+    ],
+    [
+        'pushc',
+        24,
+        '2char',
+        c=>stack.push(c)
+    ],
+    [
+        'pushs',
+        25,
+        '2short',
+        s=>stack.push(s)
+    ],
+    [
+        'pushb',
+        26,
+        '1byte',
+        b=>stack.push(b)
+    ],
+    [
+        'stackl',
+        27,
+        '0',
+        ()=>stack.push(stack.length)
+    ],
+    [
+        'getip',
+        28,
+        '0',
+        ()=>stack.push(mem.instptr)
+    ],
+    [
+        'setip',
+        29,
+        '0',
+        ()=>mem.instptr=stack.pop()
+    ],
+    [
+        'jmp',
+        30,
+        '2short',
+        i=>mem.instptr=i
+    ],
+    [
+        'ifej',
+        31,
+        '0',
+        ()=>{
+            var w=stack.pop()
+            var t=stack.pop()-1
+            var f=stack.pop()-1
+            mem.instptr=w?t:f
+        }
+    ],
+    [
+        'pushtrue',
+        32,
+        '0',
+        ()=>stack.push(true)
+    ],
+    [
+        'pushfalse',
+        33,
+        '0',
+        ()=>stack.push(false)
+    ],
+    [
+        'bxor',
+        34,
+        '0',
+        ()=>stack.push(stack.pop()^stack.pop())
+    ],
+    [
+        'and',
+        35,
+        '0',
+        ()=>stack.push(stack.pop()&&stack.pop())
+    ],
+    [
+        'or',
+        36,
+        '0',
+        ()=>stack.push(stack.pop()||stack.pop())
+    ],
+    [
+        'not',
+        37,
+        '0',
+        ()=>stack.push(!stack.pop())
+    ],
+    [
+        'eq',
+        38,
+        '0',
+        ()=>stack.push(stack.pop()==stack.pop())
+    ],
+    [
+        'neq',
+        39,
+        '0',
+        ()=>stack.push(stack.pop()!=stack.pop())
+    ],
+    [
+        'band',
+        40,
+        '0',
+        ()=>stack.push(stack.pop()&stack.pop())
+    ],
+    [
+        'mod',
+        41,
+        '0',
+        ()=>stack.push(stack.pop()%stack.pop())
+    ],
+    [
+        'xor',
+        42,
+        '0',
+        ()=>{
+            var v1=stack.pop();
+            var v2=stack.pop();
+            stack.push(v1&&!v2||!v1&&v2)
+        }
+    ],
+    [
+        'inc',
+        43,
+        '0',
+        ()=>stack[stack.length-1]++
+    ],
+    [
+        'dec',
+        44,
+        '0',
+        ()=>stack[stack.length-1]--
+    ],
+    [
+        'codepoint',
+        45,
+        '0',
+        ()=>mem.codepoints[stack.pop()]=mem.instptr+1
+    ],
+    [
+        'gotocp',
+        46,
+        '0',
+        ()=>mem.instptr=mem.codepoints[stack.pop()]
+    ],
+    [
+        'getcp',
+        47,
+        '0',
+        ()=>stack.push(mem.codepoints[stack.pop()])
+    ],
+    [
+        'remcp',
+        48,
+        '0',
+        ()=>delete mem.codepoints[stack.pop()]
+    ],
+    [
+        'jmpo',
+        49,
+        '0',
+        ()=>mem.instptr+=stack.pop()-0
+    ],
+    [
+        'jmpa',
+        50,
+        '0',
+        ()=>mem.instptr-=stack.pop()-0
+    ],
+    [
+        'gr',
+        51,
+        '0',
+        ()=>stack.push(stack.pop()>stack.pop())
+    ],
+    [
+        'le',
+        52,
+        '0',
+        ()=>stack.push(stack.pop()<stack.pop())
+    ],
+    [
+        'gre',
+        53,
+        '0',
+        ()=>stack.push(stack.pop()>=stack.pop())
+    ],
+    [
+        'lee',
+        54,
+        '0',
+        ()=>stack.push(stack.pop()<=stack.pop())
+    ]
 
     
 ]

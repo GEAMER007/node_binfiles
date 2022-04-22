@@ -11,6 +11,9 @@ class Memory{
         this.strpool=[]
         this.vartab={}
         this.bytecode=Buffer.from([])
+        this.instptr=0
+        this.codepoints={}
+        this.curinstruction=''
     }
     
 }
@@ -40,6 +43,9 @@ function bufCopy(buf,start,end){
     return Buffer.from(buffarray)
   }
 opcodes.opcodes.forEach(v=>{
+    if(v[0]=='pushfalse'){
+       var x=5+5
+    }
     opcmapping.ito[v[1]]=v[0]
     opcmapping.otcb[v[0]]=v[3]
     var s=v[2].split('')
@@ -59,9 +65,8 @@ opcmapping.ota[opcode].forEach((v,i)=>{
 return args
 }
 mem
- function executeInstruction(opcode,argbuf){
-     opcmapping.otcb[opcode]
-    (...abta(argbuf,opcode))
+ function executeInstruction(opcode,...args){
+     opcmapping.otcb[opcode](...args)
     
 }
 function execute_bytecode(codebuf=Buffer.from([])){
@@ -70,10 +75,15 @@ function execute_bytecode(codebuf=Buffer.from([])){
     while(ofs<codebuf.length){
         var opcode=opcmapping.ito[codebuf[ofs++]]
         var argbuf=bufCopy(codebuf,ofs,opcmapping.ota[opcode][0]+ofs)
-        instructions.push([opcode,argbuf])
+        instructions.push([opcode,...abta(argbuf,opcode)])
         ofs+=argbuf.length
     }
-    instructions.forEach(i=> executeInstruction(...i) )
+    console.time('execution complete! time taken:')
+    for(;mem.instptr<instructions.length;mem.instptr++){
+        mem.curinstruction=instructions[mem.instptr].join(' ')
+        executeInstruction(...instructions[mem.instptr])
+    }
+    console.timeEnd('execution complete! time taken:')
 }
 const nbcsign=0x4e424331
 function runNBC(filepath){

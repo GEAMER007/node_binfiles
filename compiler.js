@@ -18,6 +18,9 @@ class Memory{
         this.strpool=[]
         this.vartab={}
         this.bytecode=Buffer.from([])
+        this.instptr=0
+        this.codepoints={}
+        this.curinstruction=''
     }
     
 }
@@ -67,6 +70,7 @@ lines.forEach((l,li)=>{
     if(l==''||l.startsWith('//'))return
     if(l.startsWith('#')||l.startsWith('*#')){cursec=l.startsWith('*#')?'#comment':l}
     else{
+        
         sectioncompilers[cursec]?sectioncompilers[cursec](l,li):console.warn("Unexpected section detected")
     }
     })
