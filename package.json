@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "pkg interpreter.js --output build/interptreter --config package.json && pkg compiler.js --output build/compiler --config package.json"
+    "build": "pkg njsbc_to_js.js -t node14-linux,node14-win --output build/njsbc_to_js --config package.json && pkg interpreter.js -t node14-linux,node14-win --output build/interptreter --config package.json && pkg compiler.js -t node14-linux,node14-win --output build/compiler --config package.json"
   },
   "pkg": {
     "assets": "./assets/*"

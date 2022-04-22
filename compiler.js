@@ -6,12 +6,12 @@ if(process.argv<3){
     5+2
 }
 if(!target&&process.argv.length>2){
-    target= `${path.dirname(source)}/${path.basename(source,'.nbcs')}.nbc`
+    target= `${path.dirname(source)}/${path.basename(source,'.njsbcs')}.njsbc`
 }
 console.log(`compiling ${source} => ${target}...`)
 console.time(`Compilation of ${source} into ${target} completed. time taken`)
 var fs=require('fs')
-const nbcsign=Buffer.from("NBC1")
+const nbcsign=Buffer.from("NBF1")
 class Memory{
     constructor() {
         this.stack=[]
@@ -21,6 +21,7 @@ class Memory{
         this.instptr=0
         this.codepoints={}
         this.curinstruction=''
+        this.metadata={}
     }
     
 }
@@ -47,6 +48,7 @@ var lines=inp.split('\r\n')
 var cursec=''
 var codebufs=[]
 var poolbuf=[]
+var metajson=''
 var sectioncompilers={
     '#comment':()=>{},
     '#strpool':l=>poolbuf.push(...GetUInt16BE(l.length),...Buffer.from(l)),
@@ -63,7 +65,8 @@ var sectioncompilers={
                     arbuf.push(tp[2](args[i]))
                 })
                 codebufs.push(Buffer.concat(arbuf))
-    }
+    },
+'#metadata':(l,li)=>metajson+=l+'\n'
 }
 
 lines.forEach((l,li)=>{
@@ -79,9 +82,18 @@ function GetUInt16BE(num){
     buf.writeUInt16BE(num)
     return buf
 }
-
-var poolbuf=Buffer.from(poolbuf)
-var codebuf=Buffer.concat(codebufs)
-var nbcbufar=[...nbcsign,1,...GetUInt16BE(poolbuf.length),...poolbuf,2,...GetUInt16BE(codebuf.length),...codebuf]
+var sections=[[1,Buffer.from(poolbuf)],[2,Buffer.concat(codebufs)]]
+var metajson=metajson==''?{}:JSON.parse(metajson)
+var metabuf=[]
+for(var k in metajson){
+    var keyb=Buffer.from(k.toString())
+    var keylenb=GetUInt16BE(keyb.length)
+    var valb=Buffer.from(metajson[k].toString())
+    var vallenb=GetUInt16BE(valb.length)
+    metabuf.push(...keylenb,...keyb,...vallenb,...valb)
+}
+sections.push([3,Buffer.from(metabuf)])
+var nbcbufar=[...nbcsign]//1,...GetUInt16BE(poolbuf.length),...poolbuf,2,...GetUInt16BE(codebuf.length),...codebuf]
+sections.forEach(s=>nbcbufar.push(s[0],...GetUInt16BE(s[1].length),...s[1]))
 fs.writeFileSync(target,Buffer.from(nbcbufar))
 console.timeEnd(`Compilation of ${source} into ${target} completed. time taken`)

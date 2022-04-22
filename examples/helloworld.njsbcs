@@ -26,3 +26,9 @@ pops
 // exit with code 0
 pushi 0
 exit
+
+#metadata
+// here you can put in anything you like
+{
+    "author":"GEAMER007"
+}

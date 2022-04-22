@@ -1,6 +1,7 @@
 var fs=require('fs')
 global.require=require
 var input=process.argv[2]
+var output=process.argv[3]
 if(process.argv.length<3){
     //breakpoint goes here for debugging
     5+5
@@ -65,11 +66,7 @@ opcmapping.ota[opcode].forEach((v,i)=>{
 })
 return args
 }
-mem
- function executeInstruction(opcode,...args){
-     opcmapping.otcb[opcode](...args)
-    
-}
+
 function execute_bytecode(codebuf=Buffer.from([])){
     var instructions=[]
     var ofs=0
@@ -79,12 +76,47 @@ function execute_bytecode(codebuf=Buffer.from([])){
         instructions.push([opcode,...abta(argbuf,opcode)])
         ofs+=argbuf.length
     }
-    console.time('execution complete! time taken:')
+    var contents=`global.require=require
+    class Memory{
+        constructor() {
+            this.stack=[]
+            this.strpool=[]
+            this.codepoints={}
+            this.vartab={}
+            this.bytecode=Buffer.from([])
+            this.instptr=0
+            this.curinstruction=''
+            this.metadata={}
+        }
+        
+    }
+    function executeInstruction(func,...args){
+        func(...args)
+    }
+    var mem=new Memory()
+    mem.strpool=[
+        "${mem.strpool.join('",\n\t"')}"
+    ]
+    var {strpool,vartab,stack}=mem
+    var instructions=[
+
+`
+    instructions.forEach(i=>{
+        
+        contents+=`\t[${opcmapping.otcb[i[0]].toString()},`
+        i.shift()
+        i.forEach(a=>{
+            if(a instanceof String)contents+=`\`${a}\`,`
+            else contents+=`${a},`
+        })
+        contents+='],\n'
+    })
+    contents+=` ]
     for(;mem.instptr<instructions.length;mem.instptr++){
         mem.curinstruction=instructions[mem.instptr].join(' ')
         executeInstruction(...instructions[mem.instptr])
-    }
-    console.timeEnd('execution complete! time taken:')
+    }`
+    fs.writeFileSync(output,contents)
 }
 const nbcsign=0x4e424631
 function runNBF(filepath){
@@ -117,22 +149,6 @@ function runNBF(filepath){
             case 2:{
                 mem.bytecode=sectionbody
                 break
-            }
-            //metadata key-value pairs
-            case 3:{
-                while(lofs<sectionbody.length){
-                    var strlen=sectionbody.readUint16BE(lofs)
-                    lofs+=2
-                    var key=bufCopy(sectionbody,lofs,lofs+strlen).toString('utf-8')
-                    lofs+=strlen
-                    strlen=sectionbody.readUint16BE(lofs)
-                    lofs+=2
-                    var value=bufCopy(sectionbody,lofs,lofs+strlen).toString('utf-8')
-                    lofs+=strlen
-                    mem.metadata[key]=value
-                 }
-                 break
-
             }
             default:
                 console.warn("Unknown section found. section descriptor: "+sectiontype)

@@ -7,6 +7,7 @@ class Memory{
         this.bytecode=Buffer.from([])
         this.instptr=0
         this.curinstruction=''
+        this.metadata={}
     }
     
 }
@@ -128,7 +129,7 @@ module.exports=(mem=new Memory())=>{
         'exit',
         11,
         '4int',
-        process.exit
+        i=>process.exit(i)
     ],
     [
         'new',
@@ -402,6 +403,12 @@ module.exports=(mem=new Memory())=>{
         54,
         '0',
         ()=>stack.push(stack.pop()<=stack.pop())
+    ],
+    [
+        'getmeta',
+        55,
+        '0',
+        ()=>stack.push(mem.metadata[stack.pop()])
     ]
 
     

@@ -41,3 +41,9 @@ pushp
 getp
 pushi 50
 calls
+
+#metadata
+// here you can put in anything you like
+{
+    "author":"GEAMER007"
+}
