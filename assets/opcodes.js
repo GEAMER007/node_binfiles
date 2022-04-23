@@ -129,7 +129,7 @@ module.exports=(mem=new Memory())=>{
         'exit',
         11,
         '4int',
-        i=>mem.instptr=Infinity
+        i=>process.exit(i)
     ],
     [
         'new',
