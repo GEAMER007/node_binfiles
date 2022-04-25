@@ -5,6 +5,7 @@ if(process.argv.length<3){
     //breakpoint goes here for debugging
     5+5
 }
+var in_debug=typeof v8debug === 'object';
 class Memory{
     constructor() {
         this.stack=[]
@@ -33,6 +34,8 @@ var opcodes = require('./assets/opcodes')
 opcodes=opcodes(mem)
 var opcmapping={
     ito:{},
+    itcb:{},
+    ita:{},
     otcb:{},
     ota:{}
 }
@@ -44,15 +47,15 @@ function bufCopy(buf,start,end){
     return Buffer.from(buffarray)
   }
 opcodes.opcodes.forEach(v=>{
-    if(v[0]=='pushfalse'){
-       var x=5+5
-    }
     opcmapping.ito[v[1]]=v[0]
+    opcmapping.itcb[v[1]]=v[3]
     opcmapping.otcb[v[0]]=v[3]
     var s=v[2].split('')
     var al=s[0]-0
     s.shift()
-    opcmapping.ota[v[0]]=[al,...s.join('').split(',')]
+    var a=[al,...s.join('').split(',')]
+    opcmapping.ota[v[0]]=a
+    opcmapping.ita[v[1]]=a
 })
 function abta(abuf,opcode){
 var args=[]
@@ -70,9 +73,10 @@ mem
      opcmapping.otcb[opcode](...args)
     
 }
-function execute_bytecode(codebuf=Buffer.from([])){
-    var instructions=[]
+function execute_bytecode(codebuf=new Buffer()){
     var ofs=0
+    if(in_debug){
+    var instructions=[]
     while(ofs<codebuf.length){
         var opcode=opcmapping.ito[codebuf[ofs++]]
         var argbuf=bufCopy(codebuf,ofs,opcmapping.ota[opcode][0]+ofs)
@@ -85,6 +89,22 @@ function execute_bytecode(codebuf=Buffer.from([])){
         executeInstruction(...instructions[mem.instptr])
     }
     console.timeEnd('execution complete! time taken:')
+    }
+    else{
+        while(ofs<codebuf.length){
+            const opar=opcodes.opcodes[codebuf[ofs++]]
+            if(opar[2]!='0'){
+                const argbuf=Buffer.alloc(opar[2]-0)
+                codebuf.copy(argbuf,0,ofs,ofs+argbuf.length)
+                ofs+=argbuf.length
+                const arg=opcodes.btypes[opar[2].slice(1,opar[2].length)][1][argbuf]
+                opar[3](arg)
+                
+            }
+            else opar[3]()
+
+        }
+    }
 }
 const nbcsign=0x4e424631
 function runNBF(filepath){
