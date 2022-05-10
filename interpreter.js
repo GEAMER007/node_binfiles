@@ -94,10 +94,10 @@ function execute_bytecode(codebuf=new Buffer()){
         while(ofs<codebuf.length){
             const opar=opcodes.opcodes[codebuf[ofs++]]
             if(opar[2]!='0'){
-                const argbuf=Buffer.alloc(opar[2]-0)
+                const argbuf=Buffer.alloc(opar[2][0]-0)
                 codebuf.copy(argbuf,0,ofs,ofs+argbuf.length)
                 ofs+=argbuf.length
-                const arg=opcodes.btypes[opar[2].slice(1,opar[2].length)][1][argbuf]
+                const arg=opcodes.btypes[opar[2].slice(1,opar[2].length)][1](argbuf)
                 opar[3](arg)
                 
             }
