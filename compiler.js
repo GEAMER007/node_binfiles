@@ -44,7 +44,7 @@ opcodes.opcodes.forEach(v=>{
 })
 var inp=fs.readFileSync(source).toString('utf-8')
 if(!inp.startsWith('#'))throw new Error("source file must start with a section declaration (#)")
-var lines=inp.split('\r\n')
+var lines=inp.split('\r\n').join("\n").split("\n")
 var cursec=''
 var codebufs=[]
 var poolbuf=[]
