@@ -5,8 +5,7 @@ if(process.argv.length<3){
     //breakpoint goes here for debugging
     5+5
 }
-var in_debug=
-typeof v8debug === 'object';
+var in_debug=typeof v8debug === 'object';
 class Memory{
     constructor() {
         this.stack=[]
@@ -30,15 +29,16 @@ GetUInt32BE=function (num){
     buf.writeUInt32BE(num)
     return buf
 }
-
-
-// var opcmapping={
-//     ito:{},
-//     itcb:{},
-//     ita:{},
-//     otcb:{},
-//     ota:{}
-// }
+var mem=new Memory()
+var opcodes = require('./assets/opcodes')
+opcodes=opcodes(mem)
+var opcmapping={
+    ito:{},
+    itcb:{},
+    ita:{},
+    otcb:{},
+    ota:{}
+}
 function bufCopy(buf,start,end){
     var buffarray=[]
     for(var i=start;i<end;i++)
@@ -46,32 +46,75 @@ function bufCopy(buf,start,end){
          buffarray.push(buf[i])
     return Buffer.from(buffarray)
   }
-
-
-global. execute_bytecode=(mem=new Memory(),opcodes,from=0,exitAt=65535)=>{
-    mem.instptr=from
+opcodes.opcodes.forEach(v=>{
+    opcmapping.ito[v[1]]=v[0]
+    opcmapping.itcb[v[1]]=v[3]
+    opcmapping.otcb[v[0]]=v[3]
+    var s=v[2].split('')
+    var al=s[0]-0
+    s.shift()
+    var a=[al,...s.join('').split(',')]
+    opcmapping.ota[v[0]]=a
+    opcmapping.ita[v[1]]=a
+})
+function abta(abuf,opcode){
+var args=[]
+var ofs=0
+opcmapping.ota[opcode].forEach((v,i)=>{
+    if(i==0||v=='')return
+    var tp=opcodes.btypes[v]
+    args.push(tp[1](bufCopy(abuf,ofs,ofs+tp[0])))
+    ofs+=tp[0]
+})
+return args
+}
+mem
+ function executeInstruction(opcode,...args){
+     opcmapping.otcb[opcode](...args)
     
-    while(mem.instptr<mem.bytecode.length&&mem.instptr<exitAt){
-        if(global.breakpoint==mem.instptr){
-            console.log("nbfdbg>>breakpoint reached")
-        }
-        const [,,,f,a]=opcodes.opcodes[mem.bytecode[mem.instptr++]]
-        f(a?.call())
-        
+}
+function execute_bytecode(codebuf=new Buffer()){
+    var ofs=0
+    if(in_debug){
+    var instructions=[]
+    while(ofs<codebuf.length){
+        var opcode=opcmapping.ito[codebuf[ofs++]]
+        var argbuf=bufCopy(codebuf,ofs,opcmapping.ota[opcode][0]+ofs)
+        instructions.push([opcode,...abta(argbuf,opcode)])
+        ofs+=argbuf.length
     }
+    console.time('execution complete! time taken:')
+    for(;mem.instptr<instructions.length;mem.instptr++){
+        mem.curinstruction=instructions[mem.instptr].join(' ')
+        executeInstruction(...instructions[mem.instptr])
+    }
+    console.timeEnd('execution complete! time taken:')
+    }
+    else{
+        while(ofs<codebuf.length){
+            const opar=opcodes.opcodes[codebuf[ofs++]]
+            if(opar[2]!='0'){
+                const argbuf=Buffer.alloc(opar[2][0]-0)
+                codebuf.copy(argbuf,0,ofs,ofs+argbuf.length)
+                ofs+=argbuf.length
+                const arg=opcodes.btypes[opar[2].slice(1,opar[2].length)][1](argbuf)
+                opar[3](arg)
+                
+            }
+            else opar[3]()
 
-    return mem  
+        }
+    }
 }
 const nbcsign=0x4e424631
-global. parse_nbf=(nbcbuf)=>{
+function runNBF(filepath){
+
+    var nbcbuf=fs.readFileSync(filepath)
     var ofs=0
     if(nbcbuf.readUInt32BE(ofs)!=nbcsign)
         throw new Error("Invalid NBF file: signature not found")
     ofs+=4
-    var mem=new Memory()
-    var opcodes = require('./assets/opcodes')
-    opcodes=opcodes(mem)
-    mem.opcodes=opcodes
+    
     while(ofs<nbcbuf.length){
         var sectiontype=nbcbuf.readUint8(ofs++)
         var sectionlen=nbcbuf.readUint16BE(ofs)
@@ -116,24 +159,8 @@ global. parse_nbf=(nbcbuf)=>{
                 break
         }
     }
-    return mem
-}
-global. readAndParseNBF=(filepath)=>parse_nbf(fs.readFileSync(filepath))
-global. compileFunction=(mem,address)=>{
-    
-}
-global. runNBF=(filepath)=>{var mem=readAndParseNBF(filepath);execute_bytecode(mem,mem.opcodes)}
-global. importFunction=(finame,funame)=>{
-    var mem=readAndParseNBF(finame)
-    var exports=JSON.parse(mem.metadata["_exports"])
-    if(!exports[funame])throw new Error(`File ${finame} does not export function ${funame}`)
-    var endAdress=mem.bytecode.readUint16BE(exports[funame]-3)
-    //var s=()=>stack.shift(),m=s(),f=s()+3,t=s()-6;(...a)=>{m.stack.push(...a);return execute_bytecode(m,m.opcodes,f,t).stack[0]}
-    return (...a)=>{
-        mem.stack.splice(0)
-        mem.stack.push(...a)
-        return execute_bytecode(mem,mem.opcodes,exports[funame],endAdress).stack[0]
-    }
+    execute_bytecode(mem.bytecode)
+    // setTimeout(process.exit,500)
 }
 
 runNBF(input)

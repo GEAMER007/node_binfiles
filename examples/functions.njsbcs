@@ -1,0 +1,25 @@
+#strpool
+hello world
+#code
+
+// parses the requested file
+// finds the requested function in exports
+// defines it in memory
+// creates a VM instance
+// uses it to execute the function
+// returns the stack of VM as a
+// return value of function
+
+$importFunction examples/console.njsbc log
+pushb 0
+pushp
+calls
+pops
+
+
+
+#metadata 
+// here you can put in anything you like
+{
+    "author":"GEAMER007"
+}

@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "pkg njsbc_to_js.js -t node14-linux,node14-win --output build/njsbc_to_js --config package.json && pkg interpreter.js -t node14-linux,node14-win --output build/interptreter --config package.json && pkg compiler.js -t node14-linux,node14-win --output build/compiler --config package.json"
+    ,"buildExtension":"Xcopy /Y /E /I host C:\\Users\\%username%\\.vscode\\extensions"
   },
   "pkg": {
     "assets": "./assets/*"

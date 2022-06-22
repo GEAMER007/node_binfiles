@@ -11,6 +11,9 @@ class Memory{
     }
     
 }
+function sleepSync(s){
+    return new Promise(r=>setTimeout(r,s))
+}
 module.exports=(mem=new Memory())=>{
     var {strpool,vartab,stack}=mem
     return{
@@ -58,7 +61,8 @@ module.exports=(mem=new Memory())=>{
         "pushi",
         1,
         "4int",
-        i=>stack.push(i)
+        i=>stack.push(i),
+        ()=>mem.bytecode.readUint32BE((mem.instptr+=4)-4)
     ],
     [
         "calls",
@@ -101,7 +105,7 @@ module.exports=(mem=new Memory())=>{
         "delv",
         7,
         '0',
-        ()=>delete vartab[stack.pop()]
+        ()=>{delete vartab[stack.pop()]}
     ],
     [
         'pops',
@@ -135,7 +139,8 @@ module.exports=(mem=new Memory())=>{
         'exit',
         11,
         '4int',
-        i=>process.exit(i)
+        i=>process.exit(i),
+        ()=>mem.bytecode.readUint32BE((mem.instptr+=4)-4)
     ],
     [
         'new',
@@ -213,25 +218,29 @@ module.exports=(mem=new Memory())=>{
         'buildstr',
         23,
         '2short',
-        si=>stack.push(stack.splice(stack.length-si,stack.length).join(''))
+        si=>stack.push(stack.splice(stack.length-si,stack.length).join('')),
+        ()=>mem.bytecode.readUint16BE((mem.instptr+=2)-2)
     ],
     [
         'pushc',
         24,
         '2char',
-        c=>stack.push(c)
+        c=>stack.push(c),
+        ()=>String.fromCharCode(mem.bytecode.readUint16BE((mem.instptr+=2)-2))
     ],
     [
         'pushs',
         25,
         '2short',
-        s=>stack.push(s)
+        s=>stack.push(s),
+        ()=>mem.bytecode.readUint16BE((mem.instptr+=2)-2)
     ],
     [
         'pushb',
         26,
         '1byte',
-        b=>stack.push(b)
+        b=>stack.push(b),
+        ()=>mem.bytecode[mem.instptr++]
     ],
     [
         'stackl',
@@ -255,7 +264,8 @@ module.exports=(mem=new Memory())=>{
         'jmp',
         30,
         '2short',
-        i=>mem.instptr=i
+        i=>mem.instptr=i,
+        ()=>mem.bytecode.readUint16BE((mem.instptr+=2)-2)
     ],
     [
         'ifej',
@@ -415,7 +425,56 @@ module.exports=(mem=new Memory())=>{
         55,
         '0',
         ()=>stack.push(mem.metadata[stack.pop()])
+    ],
+    [
+        'pcalls',
+        56,
+        '0',
+        ()=>{
+            const obj=stack.shift()
+            const func=stack.shift();
+            const args=stack.splice(0,stack.length)
+            const ret=obj[func](...args)
+            stack.push(ret)
+        }
+    ],
+    [
+        'ltf',
+        57,
+        '0',
+        ()=>stack.push(stack.shift())
+    ],
+    [
+        'ftl',
+        58,
+        '0',
+        ()=>stack.unshift(stack.pop())
+    ],
+    [
+        'fts',
+        59,
+        '0',
+        ()=>stack.push(stack.pop(),stack.pop())
+    ],
+    [
+        'sleep',
+        60,
+        '0',
+        async()=>await sleepSync(stack.pop())
+    ],
+    [
+        'iters',
+        61,
+        '0',
+        ()=>stack.push(...stack.pop())
+    ],
+    [
+        'nop',
+        62,
+        '0',
+        ()=>{}
     ]
+    
 
     
 ]

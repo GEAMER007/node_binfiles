@@ -1,0 +1,21 @@
+#strpool
+console
+log
+hello world
+#code
+$function log
+pushb 0
+pushp
+pushgl
+pushb 1
+pushp
+getp
+ltf
+calls
+$ret
+
+$exportFunction log
+#metadata
+{
+    "author":"GEAMER007"
+}

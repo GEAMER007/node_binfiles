@@ -1,51 +1,17 @@
 #strpool
-wloopstart
-wloopcondition
+looping infinitely
 console
 log
-hi
-Math
-random
-half
-loop ended
+loop is done
+Math.random()>0.5
 #code
 
-//0.5
-pushb 2
-pushb 1
-div
-pushb 7
-pushp
-store
 
-//random function
-pushb 5
-pushp
-pushgl
-pushb 6
-pushp
-getp
-pushb 6
-pushp
-store
 
-//console.log
-pushb 2
-pushp
-pushgl
-pushb 3
-pushp
-getp
-pushb 3
-pushp
-store
 
 //while loop
-
-//codepoint name can be anything you want
-pushb 0
-pushp
-codepoint
+// you can change whileloop1 to anything
+$function whileloop1
 
 // your
 // code
@@ -56,57 +22,48 @@ codepoint
 // loop
 // goes
 // here
-
-pushb 3
-pushp
-pushvar
-
-pushb 4
-pushp
-calls
-
-pops
-
-// your condition goes here
-pushb 6
-pushp
-pushvar
-calls
-pushb 7
-pushp
-pushvar
-gr
-// store its value into a variable
+// my code example
 pushb 1
 pushp
-store
-// get instruction pointer that points to an instruction outside of a loop
-getip
-pushb 10
-add
-// get instruction pointer that points to the first instruction inside the loop
+pushgl
+pushb 2
+pushp
+getp
 pushb 0
 pushp
-getcp
-// push result of the condition to the stack
-pushb 1
-pushp
-pushvar
-
-ifej
-
-// code that will be executed after the loop
-
-pushb 3
-pushp
-pushvar
-
-pushb 8
-pushp
 calls
 pops
+// this logs "looping infinitely" to the console
 
-exit
+
+// your condition goes here
+pushb 4
+pushp
+invokeJS
+// copy this part
+getip
+pushb 6
+add
+// get instruction pointer that points to $call <loopname>
+getip
+pushb 2
+ifej
+// if condition is true
+$call whileloop1
+// else continue code execution
+
+
+
+pushb 1
+pushp
+pushgl
+pushb 2
+pushp
+getp
+pushb 3
+pushp
+calls
+// this logs "loop is done" to the console
 
 #metadata
 // here you can put in anything you like

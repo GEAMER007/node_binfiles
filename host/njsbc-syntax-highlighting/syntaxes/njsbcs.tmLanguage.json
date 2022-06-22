@@ -1,0 +1,64 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "node js pseudo bytecode source",
+	"patterns": [
+		
+		{
+			"include": "#sections"
+		},
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#opcodes"
+		}
+	],
+	"repository": {
+		"opcodes":{
+			"patterns": [{
+				"name": "storage.type.njsbcs",
+				"match": "\n[a-z]+"
+			}]
+			
+		},
+		"sections":{
+			"patterns": [{
+				"name": "storage.modifier.njsbcs",
+				"match": "#[A-z]+"
+			}]
+			
+		},
+		
+		"keywords": {
+			"patterns": [{
+				"name": "keyword.control.njsbcs",
+				"match": "\\$[A-z]+"
+			}
+		]
+		},
+		
+		"comments":{
+			"name":"comment.njsbcs",
+			"begin": "//",
+			"end": "\n"
+		},
+		"strings": {
+			"name": "string.quoted.double.njsbcs",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.njsbcs",
+					"match": "\\\\."
+				}
+			]
+		}
+	},
+	"scopeName": "source.njsbcs"
+}

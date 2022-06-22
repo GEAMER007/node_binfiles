@@ -1,0 +1,25 @@
+{
+    "name": "njsbc-syntax-highlighting",
+    "displayName": "NJSBC syntax highlighting",
+    "description": "highlights syntax in njsbcs files",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.67.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "njsbcs",
+            "aliases": ["node js pseudo bytecode source", "njsbcs"],
+            "extensions": [".njsbcs"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "njsbcs",
+            "scopeName": "source.njsbcs",
+            "path": "./syntaxes/njsbcs.tmLanguage.json"
+        }]
+    }
+}
