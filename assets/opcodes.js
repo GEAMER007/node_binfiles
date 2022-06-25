@@ -473,6 +473,18 @@ module.exports=(mem=new Memory())=>{
         62,
         '0',
         ()=>{}
+    ],
+    [
+        'pushundefined',
+        63,
+        '0',
+        ()=>stack.push(undefined)
+    ],
+    [
+        'pushnan',
+        62,
+        '0',
+        ()=>stack.push(NaN)
     ]
     
 

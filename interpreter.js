@@ -52,9 +52,6 @@ global. execute_bytecode=(mem=new Memory(),opcodes,from=0,exitAt=65535)=>{
     mem.instptr=from
     
     while(mem.instptr<mem.bytecode.length&&mem.instptr<exitAt){
-        if(global.breakpoint==mem.instptr){
-            console.log("nbfdbg>>breakpoint reached")
-        }
         const [,,,f,a]=opcodes.opcodes[mem.bytecode[mem.instptr++]]
         f(a?.call())
         
@@ -119,8 +116,19 @@ global. parse_nbf=(nbcbuf)=>{
     return mem
 }
 global. readAndParseNBF=(filepath)=>parse_nbf(fs.readFileSync(filepath))
-global. compileFunction=(mem,address)=>{
-    
+global. compileFunction=(oldmem,address)=>{
+    var mem=new Memory()
+    mem.strpool=oldmem.strpool
+    mem.bytecode=oldmem.bytecode
+    mem.metadata=oldmem.metadata
+    mem.vartab=oldmem.vartab
+    mem.opcodes=oldmem.opcodes
+    var endAdress=mem.bytecode.readUint16BE(address-3)
+    return (...a)=>{
+        mem.stack.splice(0)
+        mem.stack.push(...a)
+        return execute_bytecode(mem,mem.opcodes,address,endAdress).stack[0]
+    }
 }
 global. runNBF=(filepath)=>{var mem=readAndParseNBF(filepath);execute_bytecode(mem,mem.opcodes)}
 global. importFunction=(finame,funame)=>{

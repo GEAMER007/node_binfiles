@@ -99,7 +99,6 @@ var sectioncompilers={
                     ])
                     codebufs.push(...jb)
                     currentIP+=jb.length
-                    
                     break
                 }
                 case'exportFunction':{
@@ -144,6 +143,29 @@ var sectioncompilers={
                 codebufs.push(...jb)
                 
                 break
+                case 'pushFunctionAddress':{
+                    var jb=Buffer.from([0x19,0,0])
+                    codebufs.push(...jb)
+                    expectedAreas.push([args[1],codebufs.length-2,li+1])
+                    currentIP+=3
+                    break
+                }
+                case 'compileFunction':{
+                var _mem=fetchOrCreateString('mem')
+                var _cf=fetchOrCreateString('compileFunction')
+
+                var jb=Buffer.from([0x19,...GetUInt16BE(_cf),0x04,0x03,     0x19,...GetUInt16BE(_mem),0x04,0x0d,    0x19,0x00,0x00      ,0x02])
+                codebufs.push(...jb)
+                expectedAreas.push([args[1],codebufs.length-3,li+1])
+                break
+                }
+                case 'pushMemoryObject':{
+                    var _mem=fetchOrCreateString('mem')
+                    var jb=Buffer.from([0x19,...GetUInt16BE(_mem),0x04,0xd])
+                    codebufs.push(...jb)
+                    currentIP+=5
+                    break
+                }
                 case'pushfunction':
                 var c=fetchOrCreateString( "()=>mem.instptr=")
                 var jb=Buffer.from([0x1a,0x01,0x19,0x00,0x00,0x0f,    0x19,0x00,0x00,0x04,    0x0e,0x0d])
